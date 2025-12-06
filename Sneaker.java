@@ -1,6 +1,6 @@
 /*
 *Name: Ulysses Burden III
-*Date: November 28, 2025
+*Date: December 5, 2025
 *Assignment: Sneaker Closet App
 *Description: This class represents a Sneaker in the Sneaker Closet Application.
 *It includes attributes such as brand, size, color, and type.
@@ -66,7 +66,7 @@ public class Sneaker implements Displayable {
         this.styleProfile = styleProfile;
     }
 
-    // Optional: more specific debug output
+    // Display method
     @Override
     public String display() {
         return "Sneaker ID: " + sneakerID

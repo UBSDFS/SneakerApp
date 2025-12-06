@@ -1,38 +1,43 @@
 /*
 *Name: Ulysses Burden III
-*Date: November 28, 2025
+*Date: December 5, 2025
 *Assignment: Sneaker Closet App
 *Description: This class manages the sneaker collection in the Sneaker Closet Application.
 *It holds the logic/loops for the menu and user interactions.
 *It allows users to add, remove, view, and organize their sneakers.
  */
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class SneakerManager {
 
-    private List<Sneaker> sneakerCollection;
+    // Collection of sneakers and storage handler for database operations
+    private SneakerStorage storage;
     private Scanner scanner;
 
     // Constructor
     public SneakerManager() {
-        this.sneakerCollection = new ArrayList<>();
         this.scanner = new Scanner(System.in);
+        this.storage = new SneakerStorage("Sneaker.db");
+
     }
 
     // Methods to manage sneakers
     public void addSneaker(Sneaker sneaker) {
-        sneakerCollection.add(sneaker);
+        storage.addSneaker(sneaker);
     }
 
     public void removeSneaker(int sneakerID) {
-        sneakerCollection.removeIf(sneaker -> sneaker.getSneakerID() == sneakerID);
+        storage.removeSneaker(sneakerID);
     }
 
     public List<Sneaker> viewSneakers() {
-        return sneakerCollection;
+        return storage.getAllSneakers();
+    }
+
+    public void updateSneaker(Sneaker sneaker) {
+        storage.updateSneaker(sneaker);
     }
 
     // Helper methods to read user input
@@ -85,6 +90,7 @@ public class SneakerManager {
         System.out.println("1. Add Sneaker");
         System.out.println("2. Remove Sneaker");
         System.out.println("3. View Sneakers");
+        System.out.println("4. Update Sneaker");
         System.out.println("0. Exit");
     }
 
@@ -99,6 +105,9 @@ public class SneakerManager {
                 break;
             case 3:
                 viewSneakersInStorage();
+                break;
+            case 4:
+                updateSneakerFromInput();
                 break;
             case 0:
                 System.out.println("Exiting...");
@@ -138,12 +147,41 @@ public class SneakerManager {
     // View all sneakers in the collection
     private void viewSneakersInStorage() {
         System.out.println("Viewing all sneakers...");
-        if (sneakerCollection.isEmpty()) {
+        List<Sneaker> sneakers = viewSneakers();
+
+        if (sneakers.isEmpty()) {
             System.out.println("No sneakers in the collection.");
             return;
         }
-        for (Sneaker sneaker : sneakerCollection) {
+        for (Sneaker sneaker : sneakers) {
             System.out.println(sneaker.display());
         }
+    }
+
+    //update sneaker
+    private void updateSneakerFromInput() {
+        System.out.println("Updating a sneaker...");
+        int sneakerID = readInt("Enter Sneaker ID to update:");
+        Sneaker existingSneaker = storage.getSneakerById(sneakerID);
+        if (existingSneaker == null) {
+            System.out.println("No sneaker found with that ID.");
+            return;
+        }
+        // Display current details for sneakers
+        System.out.println("Current sneaker details: ");
+        System.out.println(existingSneaker.display());
+
+        String name = readString("Enter new Sneaker Name (current: " + existingSneaker.getName() + "):");
+        String brand = readString("Enter new Sneaker Brand (current: " + existingSneaker.getBrand() + "):");
+        double size = readDouble("Enter new Sneaker Size (current: " + existingSneaker.getSize() + "):");
+
+        String primaryStyle = readString("Enter new Primary Style (current: " + existingSneaker.getStyleProfile().getPrimaryStyle() + "):");
+        String secondaryStyle = readString("Enter new Secondary Style (current: " + existingSneaker.getStyleProfile().getSecondaryStyle() + "):");
+
+        StyleProfile updatedProfile = new StyleProfile(primaryStyle, secondaryStyle);
+        Sneaker updatedSneaker = new Sneaker(sneakerID, name, brand, size, updatedProfile);
+        storage.updateSneaker(updatedSneaker);
+
+        System.out.println("Sneaker updated successfully!");
     }
 }
