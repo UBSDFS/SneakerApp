@@ -1,6 +1,7 @@
 Project Name: Sneaker Closet Manager
 Project Description
 Sneaker Closet Manager is a Java-based application that allows users to catalog, organize, and manage their sneaker collection. Built using object-oriented programming principles and SQLite database integration, the application supports full CRUD functionality, sneaker style profiling, and a modular designed for future expansion (GUI or web interface).
+
 Project Tasks
 Task 1: Initial Project Setup
 - Create project structure and base classes
@@ -41,8 +42,6 @@ Task 7: Documentation
 - Create README
 - Update phase descriptions
 - Prepare class documentation
-- Optional UML diagrams
-Skills Learned
 - Object-oriented design (classes, objects, composition, interfaces)
 - Java fundamentals and console app architecture
 - JDBC database connectivity
