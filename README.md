@@ -68,5 +68,5 @@ Notes
 - Ensure JDBC driver is included in classpath.
 - Future versions may introduce a GUI layer.
 Link to Project
-Add GitHub repository URL here.
-License
+https://github.com/UBSDFS/SneakerApp/releases/tag/Phase%233
+
