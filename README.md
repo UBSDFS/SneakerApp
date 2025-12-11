@@ -67,6 +67,7 @@ Notes
 - SQLite DB file is created automatically.
 - Ensure JDBC driver is included in classpath.
 - Future versions may introduce a GUI layer.
+
 Link to Project
 https://github.com/UBSDFS/SneakerApp/releases/tag/Phase%233
 
