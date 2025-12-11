@@ -1,6 +1,6 @@
 /*
 *Name: Ulysses Burden III
-*Date: November 28, 2025
+*Date: December 8, 2025
 *Assignment: Sneaker Closet App
 *Description: This is main class for the Sneaker Closet Application
 *The application allows users to view and manage their sneaker collection.

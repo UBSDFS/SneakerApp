@@ -1,6 +1,6 @@
 /*
 *Name: Ulysses Burden III
-*Date: December 5, 2025
+*Date: December 8, 2025
 *Assignment: Sneaker Closet App
 *Description: This class manages the sneaker collection in the Sneaker Closet Application.
 *It holds the logic/loops for the menu and user interactions.
@@ -84,9 +84,12 @@ public class SneakerManager {
 
     // Display menu options
     private void showMenu() {
-        System.out.println("=== Sneaker Closet Menu ===");
+        System.out.println("=== Welcome to the Sneaker Closet App ===");
+        System.out.println();
         System.out.println("Developed by Ulysses Burden III");
+        System.out.println();
         System.out.println("You can manage your sneaker collection here.");
+        System.out.println("Use the menu below to navigate:");
         System.out.println("1. Add Sneaker");
         System.out.println("2. Remove Sneaker");
         System.out.println("3. View Sneakers");
@@ -130,7 +133,16 @@ public class SneakerManager {
         String secondaryStyle = readString("Enter Secondary Style (or leave blank):");
 
         StyleProfile styleProfile = new StyleProfile(primaryStyle, secondaryStyle);
-        Sneaker sneaker = new Sneaker(sneakerID, name, brand, size, styleProfile);
+        String typeInput = readString("Enter Sneaker Type (H for High-Top, L for Low-Top):");
+        Sneaker sneaker;
+        if (typeInput.equalsIgnoreCase("H")) {
+            sneaker = new HighTopSneaker(sneakerID, name, brand, size, styleProfile);
+        } else if (typeInput.equalsIgnoreCase("L")) {
+            sneaker = new LowTopSneaker(sneakerID, name, brand, size, styleProfile);
+        } else {
+            System.out.println("Invalid type entered. Defaulting to regular Sneaker.");
+            sneaker = new Sneaker(sneakerID, name, brand, size, styleProfile);
+        }
         addSneaker(sneaker);
 
         System.out.println("Sneaker added successfully!");
@@ -163,25 +175,76 @@ public class SneakerManager {
         System.out.println("Updating a sneaker...");
         int sneakerID = readInt("Enter Sneaker ID to update:");
         Sneaker existingSneaker = storage.getSneakerById(sneakerID);
+
         if (existingSneaker == null) {
             System.out.println("No sneaker found with that ID.");
             return;
         }
-        // Display current details for sneakers
-        System.out.println("Current sneaker details: ");
+
+        // Display current details
+        System.out.println("Current sneaker details:");
         System.out.println(existingSneaker.display());
 
-        String name = readString("Enter new Sneaker Name (current: " + existingSneaker.getName() + "):");
-        String brand = readString("Enter new Sneaker Brand (current: " + existingSneaker.getBrand() + "):");
-        double size = readDouble("Enter new Sneaker Size (current: " + existingSneaker.getSize() + "):");
+        // Name (press Enter to keep current)
+        String nameInput = readString("Enter new Sneaker Name (or press Enter to keep: "
+                + existingSneaker.getName() + "):");
+        String name = nameInput.isBlank() ? existingSneaker.getName() : nameInput;
 
-        String primaryStyle = readString("Enter new Primary Style (current: " + existingSneaker.getStyleProfile().getPrimaryStyle() + "):");
-        String secondaryStyle = readString("Enter new Secondary Style (current: " + existingSneaker.getStyleProfile().getSecondaryStyle() + "):");
+        // Brand
+        String brandInput = readString("Enter new Sneaker Brand (or press Enter to keep: "
+                + existingSneaker.getBrand() + "):");
+        String brand = brandInput.isBlank() ? existingSneaker.getBrand() : brandInput;
+
+        // Size
+        String sizeInput = readString("Enter new Sneaker Size (or press Enter to keep: "
+                + existingSneaker.getSize() + "):");
+        double size;
+        if (sizeInput.isBlank()) {
+            size = existingSneaker.getSize();
+        } else {
+            try {
+                size = Double.parseDouble(sizeInput);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid size, keeping existing value.");
+                size = existingSneaker.getSize();
+            }
+        }
+
+        // Primary Style
+        String primaryInput = readString("Enter new Primary Style (or press Enter to keep: "
+                + existingSneaker.getStyleProfile().getPrimaryStyle() + "):");
+        String primaryStyle = primaryInput.isBlank()
+                ? existingSneaker.getStyleProfile().getPrimaryStyle()
+                : primaryInput;
+
+        // Secondary Style
+        String secondaryInput = readString("Enter new Secondary Style (or press Enter to keep: "
+                + existingSneaker.getStyleProfile().getSecondaryStyle() + "):");
+        String secondaryStyle = secondaryInput.isBlank()
+                ? existingSneaker.getStyleProfile().getSecondaryStyle()
+                : secondaryInput;
 
         StyleProfile updatedProfile = new StyleProfile(primaryStyle, secondaryStyle);
-        Sneaker updatedSneaker = new Sneaker(sneakerID, name, brand, size, updatedProfile);
-        storage.updateSneaker(updatedSneaker);
 
-        System.out.println("Sneaker updated successfully!");
+        // Preserve the sneaker type (HIGH / LOW / STANDARD)
+        String sneakerType = existingSneaker.getSneakerType();
+
+        Sneaker updatedSneaker;
+        if ("HIGH".equalsIgnoreCase(sneakerType)) {
+            updatedSneaker = new HighTopSneaker(sneakerID, name, brand, size, updatedProfile);
+        } else if ("LOW".equalsIgnoreCase(sneakerType)) {
+            updatedSneaker = new LowTopSneaker(sneakerID, name, brand, size, updatedProfile);
+        } else {
+            updatedSneaker = new Sneaker(sneakerID, name, brand, size, updatedProfile);
+        }
+
+        boolean success = storage.updateSneaker(updatedSneaker);
+
+        if (success) {
+            System.out.println("Sneaker updated successfully!");
+        } else {
+            System.out.println("No sneaker with that ID was found. Nothing was updated.");
+        }
+
     }
 }

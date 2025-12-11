@@ -33,7 +33,8 @@ public class SneakerStorage {
                 Brand        TEXT NOT NULL,
                 Size         REAL NOT NULL,
                 PrimaryStyle TEXT,
-                SecondaryStyle TEXT
+                SecondaryStyle TEXT,
+                SneakerType  TEXT
             );
             """;
 
@@ -47,8 +48,8 @@ public class SneakerStorage {
     // CRUD operations to add, remove, get, and update sneakers
     public void addSneaker(Sneaker sneaker) {
         String sql = """
-            INSERT INTO Sneakers (SneakerID, Name, Brand, Size, PrimaryStyle, SecondaryStyle)
-            VALUES (?, ?, ?, ?, ?, ?);
+            INSERT INTO Sneakers (SneakerID, Name, Brand, Size, PrimaryStyle, SecondaryStyle, SneakerType)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
             """;
 
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -58,6 +59,7 @@ public class SneakerStorage {
             pst.setDouble(4, sneaker.getSize());
             pst.setString(5, sneaker.getStyleProfile().getPrimaryStyle());
             pst.setString(6, sneaker.getStyleProfile().getSecondaryStyle());
+            pst.setString(7, sneaker.getSneakerType());
             pst.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Error inserting sneaker: " + e.getMessage());
@@ -78,7 +80,7 @@ public class SneakerStorage {
     public List<Sneaker> getAllSneakers() {
         List<Sneaker> sneakers = new ArrayList<>();
 
-        String sql = "SELECT SneakerID, Name, Brand, Size, PrimaryStyle, SecondaryStyle FROM Sneakers;";
+        String sql = "SELECT SneakerID, Name, Brand, Size, PrimaryStyle, SecondaryStyle, SneakerType FROM Sneakers;";
 
         try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -89,9 +91,21 @@ public class SneakerStorage {
                 double size = rs.getDouble("Size");
                 String primaryStyle = rs.getString("PrimaryStyle");
                 String secondaryStyle = rs.getString("SecondaryStyle");
+                String sneakerType = rs.getString("SneakerType");
 
+                // Rebuild the StyleProfile from DB values
                 StyleProfile styleProfile = new StyleProfile(primaryStyle, secondaryStyle);
-                Sneaker sneaker = new Sneaker(id, name, brand, size, styleProfile);
+
+                Sneaker sneaker;
+                if ("HIGH".equalsIgnoreCase(sneakerType)) {
+                    sneaker = new HighTopSneaker(id, name, brand, size, styleProfile);
+                } else if ("LOW".equalsIgnoreCase(sneakerType)) {
+                    sneaker = new LowTopSneaker(id, name, brand, size, styleProfile);
+                } else {
+                    // Fallback to base Sneaker if null/unknown type
+                    sneaker = new Sneaker(id, name, brand, size, styleProfile);
+                }
+
                 sneakers.add(sneaker);
             }
 
@@ -103,7 +117,7 @@ public class SneakerStorage {
     }
 
     public Sneaker getSneakerById(int sneakerID) {
-        String sql = "SELECT SneakerID, Name, Brand, Size, PrimaryStyle, SecondaryStyle "
+        String sql = "SELECT SneakerID, Name, Brand, Size, PrimaryStyle, SecondaryStyle, SneakerType "
                 + "FROM Sneakers WHERE SneakerID = ?;";
 
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -116,9 +130,20 @@ public class SneakerStorage {
                     double size = rs.getDouble("Size");
                     String primaryStyle = rs.getString("PrimaryStyle");
                     String secondaryStyle = rs.getString("SecondaryStyle");
+                    String sneakerType = rs.getString("SneakerType");
 
                     StyleProfile styleProfile = new StyleProfile(primaryStyle, secondaryStyle);
-                    return new Sneaker(id, name, brand, size, styleProfile);
+
+                    Sneaker sneaker;
+                    if ("HIGH".equalsIgnoreCase(sneakerType) || "H".equalsIgnoreCase(sneakerType)) {
+                        sneaker = new HighTopSneaker(id, name, brand, size, styleProfile);
+                    } else if ("LOW".equalsIgnoreCase(sneakerType) || "L".equalsIgnoreCase(sneakerType)) {
+                        sneaker = new LowTopSneaker(id, name, brand, size, styleProfile);
+                    } else {
+                        sneaker = new Sneaker(id, name, brand, size, styleProfile);
+                    }
+
+                    return sneaker;
                 }
             }
         } catch (SQLException e) {
@@ -127,10 +152,10 @@ public class SneakerStorage {
         return null; // not found
     }
 
-    public void updateSneaker(Sneaker sneaker) {
+    public boolean updateSneaker(Sneaker sneaker) {
         String sql = """
         UPDATE Sneakers
-        SET Name = ?, Brand = ?, Size = ?, PrimaryStyle = ?, SecondaryStyle = ?
+        SET Name = ?, Brand = ?, Size = ?, PrimaryStyle = ?, SecondaryStyle = ?, SneakerType = ?
         WHERE SneakerID = ?;
         """;
 
@@ -140,14 +165,14 @@ public class SneakerStorage {
             pst.setDouble(3, sneaker.getSize());
             pst.setString(4, sneaker.getStyleProfile().getPrimaryStyle());
             pst.setString(5, sneaker.getStyleProfile().getSecondaryStyle());
-            pst.setInt(6, sneaker.getSneakerID());
+            pst.setString(6, sneaker.getSneakerType());
+            pst.setInt(7, sneaker.getSneakerID());
 
             int rows = pst.executeUpdate();
-            if (rows == 0) {
-                System.out.println("No sneaker found with that ID. Nothing was updated.");
-            }
+            return rows > 0;   // true if something was updated
         } catch (SQLException e) {
             System.out.println("Error updating sneaker: " + e.getMessage());
+            return false;
         }
     }
 
